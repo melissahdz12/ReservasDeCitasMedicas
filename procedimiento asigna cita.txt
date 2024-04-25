@@ -1,0 +1,19 @@
+procedimiento asigna cita
+
+create or replace
+procedure asignarCita(idDoctor in number,vFechaPorRevisar in date,idPaciente in number, vCantidadCitas in number, vPudoConcertar out number) as 
+citas number;
+
+begin
+vPudoConcertar:=0;
+    citas := vCantidadCitas;
+    if citas = 0 then
+      insert into TABLAS_CITAS.citas (idcita, ID_PACIENTE, ID_DOCTOR, FECHA)
+      values (secuenciaPK.nextval, idPaciente, idDoctor, TO_DATE(TO_CHAR(vFechaPorRevisar, 'YYYY-MM-DD') | | ' 08:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+    vPudoConcertar:=1;
+    elsif citas = 1 then
+      insert into TABLAS_CITAS.citas (idcita, ID_PACIENTE, ID_DOCTOR, FECHA)
+      values (secuenciaPK.nextval,idPaciente, idDoctor, TO_DATE(TO_CHAR(vFechaPorRevisar, 'YYYY-MM-DD') | | ' 10:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+  vPudoConcertar:=1;
+    end if;
+  end asignarCita;

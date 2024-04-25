@@ -1,0 +1,174 @@
+procedimiento reserva cita 
+
+create or replace
+procedure reservaCita as
+ 
+-- Cursor que obtiene las peticiones
+
+
+cursor cPeticiones is 
+
+   select idPeticion,
+
+          idPaciente,
+
+          especialidad,
+
+          fechaInicio,
+
+          fechaFin,
+
+          estado
+
+   from tablas_citas.peticiones
+
+   where estado = 0
+
+   order by 1;
+ 
+-- Cursor que obtiene los doctores de la especialidad solicitada
+
+cursor cDoctores(vEspecialidad varchar) is 
+
+   select idDoctor
+
+   from tablas_citas.doctores  
+
+   where especialidad = vEspecialidad
+
+   order by 1;
+ 
+-- Registro para recorrer el cursor de doctores
+
+rCDoctores cDoctores%rowType;
+ 
+-- Indicador si la cita se pudo concertar (boolena)
+
+vCitaConcertada number;
+ 
+-- Contiene la fecha que se revisa para la búsqueda de citas
+
+vFechaPorRevisar date;
+ 
+-- Indicador de si la cita se pudo concertar
+
+vPudoConcertar number;
+ 
+-- Cantidad de citas de un doctor en una fecha particular
+
+vCantidadCitas number;
+
+
+ 
+ 
+Begin 
+
+   -- Para cada peticion  -- cursor trae peticiones con estado 0 procesado por FOR  
+
+   for rCPeticiones in cPeticiones loop
+
+      --si existePaciente(peticion.idPaciente)
+
+      if existePaciente(rCPeticiones.idPaciente) = 1 then 
+
+         --si existeEspecialidad(peticion.especialidad)
+
+         if existeEspecialidad(rCPeticiones.especialidad) = 1 then
+
+            --buscar los doctores con la especialidad solicitada
+
+            open cDoctores(rCPeticiones.especialidad); --> idDoctor 
+
+            --inicia sin cita
+
+            vCitaConcertada := 0;
+ 
+            -- mientras hayanDoctoresPorRevisar y citaConcertada = 0
+
+            --recorrer el cursor de los doctores
+
+            loop
+
+               --obtiene el siguiente doctor
+
+               fetch cDoctores into rCDoctores;
+
+               --se sale cuando no haya más doctores
+
+               exit when cDoctores%notFound;
+ 
+               --iniciar la revisión por fechas
+
+               vFechaPorRevisar := rCPeticiones.fechaInicio;
+ 
+               --recorrer el rango de citas
+
+               loop
+
+                  --obtener la cantidad de citas por doctor en una fecha
+
+                  vCantidadCitas := cantidadCitasDoctor(rCDoctores.idDoctor,vFechaPorRevisar);
+ 
+                  -- intenta asignar cita en la fechaPorRevisar, resultado booleano en pudoConcertar
+
+                  asignarcita(rCDoctores.idDoctor,vFechaPorRevisar,rCPeticiones.idpaciente,vCantidadCitas, vPudoConcertar);
+                  
+                  vCitaConcertada := vPudoConcertar;
+ 
+                  --terminar si la cita se concertó
+
+                  if vCitaConcertada = 1 then
+
+                     exit;
+
+                  end if;
+ 
+                  vFechaPorRevisar := vFechaPorRevisar + 1;
+ 
+                  --terminar si la fecha por revisar se sale del rango
+
+                  if  vFechaPorRevisar > rCPeticiones.fechaFin then  
+
+                     exit;
+
+                  end if;
+ 
+               end loop; -- loop de fechas por doctor
+ 
+               --terminar si la cita se concertó
+
+               if vCitaConcertada = 1 then
+
+                  exit;
+
+               end if;
+ 
+            end loop; -- loop de doctores
+ 
+            --cerrar el cursor de doctores
+
+            close cDoctores;
+ 
+            --se rechaza la cita después de explorar todos los doctores y el rango de fechas
+
+            if vCitaConcertada = 0 then
+
+               rechazar(rCPeticiones);
+
+            end if; 
+
+         else -- existeEspecialidad
+
+            rechazar(rCPeticiones);
+
+         end if;
+
+      else -- existePaciente
+
+         rechazar(rCPeticiones);
+
+      end if;
+      commit;
+   end loop;
+
+end;

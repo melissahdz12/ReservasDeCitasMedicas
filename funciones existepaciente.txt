@@ -1,0 +1,17 @@
+funciones existepaciente
+
+
+create or replace
+function existePaciente(vIdPaciente in number) return number as vExiste number;
+-- 1: True, 0: False
+begin
+   select count (*) into vExiste
+   from TABLAS_CITAS.pacientes
+   where idPaciente = vidpaciente;
+
+   if vExiste > 0 then
+      return 1; -- Existe
+   else
+      return 0; -- No existe
+   end if;
+end;

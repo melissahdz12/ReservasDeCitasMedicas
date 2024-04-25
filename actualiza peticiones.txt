@@ -1,0 +1,18 @@
+procedimiento actualiza peticiones
+
+create or replace
+procedure actualizarPeticiones(registro in tablas_citas.peticiones%rowType, CitaConcetarda in number) as 
+vCitaConcertada number;
+begin
+    vCitaConcertada := CitaConcetarda;
+   if vCitaConcertada = 1 then
+        update TABLAS_CITAS.peticiones
+        set estado = 'Concertada'
+        where idpeticion = registro.IdPeticion; 
+    elsif vCitaConcertada = 0 then
+        update TABLAS_CITAS.peticiones
+        set estado = 'Negada'
+        where idpeticion = registro.IdPeticion; 
+    end if;
+
+end;

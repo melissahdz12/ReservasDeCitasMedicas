@@ -1,0 +1,14 @@
+funciones cantidadcitasdoctor
+
+create or replace
+function cantidadCitasDoctor(vIdDoctor in number,vFechaPorRevisar in date) return number as
+vCantidad number;
+
+begin
+  
+
+   select count(*) into vCantidad from TABLAS_CITAS.citas 
+   where id_doctor = vIdDoctor and trunc(fecha) = trunc(vFechaPorRevisar);
+    
+   return vCantidad;
+end;

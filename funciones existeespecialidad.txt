@@ -1,0 +1,17 @@
+funciones existeespecialidad
+
+create or replace
+function existeEspecialidad(vEspecialidad in varchar) return number as
+Cantidad number;
+-- 1: True, 0: False
+begin
+   select count (*) into Cantidad
+   from TABLAS_CITAS.doctores
+   where Especialidad = vEspecialidad;
+
+   if Cantidad > 0 then
+      return 1; -- Existe
+   else
+      return 0; -- No existe
+   end if;
+end;

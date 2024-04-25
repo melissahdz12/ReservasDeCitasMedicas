@@ -1,0 +1,11 @@
+procedimiento rechazar
+
+create or replace
+PROCEDURE rechazar(
+    registro IN TABLAS_CITAS.peticiones%ROWTYPE
+) AS
+BEGIN
+   INSERT INTO TABLAS_CITAS.rechazados(idpeticion,IDPACIENTE, ESPECIALIDAD, FECHAINICIO, FECHAFIN) 
+   VALUES (Registro.idpeticion,registro.idPaciente, registro.especialidad, registro.fechaInicio, registro.fechaFin);
+
+END;
